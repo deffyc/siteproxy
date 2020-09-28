@@ -24,9 +24,27 @@ const middle1 = (req, res, next) => {
         return res.status(404).send('{"error": "too many redirects"}')
     }
     if (req.url === '/' || req.url === '/index.html') {
-        body = fs.readFileSync(path.join(__dirname, './index.html'), encoding = 'utf-8')
-        res.status(200).send(body)
-        return
+        var auth;
+
+        // check whether an autorization header was send    
+        if (req.headers.authorization) {
+          auth = new Buffer(req.headers.authorization.substring(6), 'base64').toString().split(':');
+        }
+        if (!auth || auth[0] !== process.env["OAUTH_CLIENT_ID"] || auth[1] !== process.env["OAUTH_CLIENT_SECRET"]) {
+            // any of the tests failed
+            // send an Basic Auth request (HTTP Code: 401 Unauthorized)
+            res.statusCode = 401;
+            // MyRealmName can be changed to anything, will be prompted to the user
+            res.setHeader('WWW-Authenticate', 'Basic realm="MyRealmName"');
+            // this will displayed in the browser when authorization is cancelled
+            res.end('Unauthorized');
+        } else {
+            // continue with processing, user was authenticated
+            body = fs.readFileSync(path.join(__dirname, './index.html'), encoding = 'utf-8')
+            res.status(200).send(body)
+            return
+        }
+        
     } else
     if (fs.existsSync(dirPath) && !fs.lstatSync(dirPath).isDirectory()) {
         body = fs.readFileSync(dirPath)
@@ -34,40 +52,6 @@ const middle1 = (req, res, next) => {
     }
     next()
 }
-
-// Authenticator
-app.use(function(req, res, next) {
-    var auth;
-
-    // check whether an autorization header was send    
-    if (req.headers.authorization) {
-      // only accepting basic auth, so:
-      // * cut the starting "Basic " from the header
-      // * decode the base64 encoded username:password
-      // * split the string at the colon
-      // -> should result in an array
-      auth = new Buffer(req.headers.authorization.substring(6), 'base64').toString().split(':');
-      // use Buffer.from in with node v5.10.0+ 
-      // auth = Buffer.from(req.headers.authorization.substring(6), 'base64').toString().split(':');
-    }
-
-    // checks if:
-    // * auth array exists 
-    // * first value matches the expected user 
-    // * second value the expected password
-    if (!auth || auth[0] !== process.env["OAUTH_CLIENT_ID"] || auth[1] !== process.env["OAUTH_CLIENT_SECRET"]) {
-        // any of the tests failed
-        // send an Basic Auth request (HTTP Code: 401 Unauthorized)
-        res.statusCode = 401;
-        // MyRealmName can be changed to anything, will be prompted to the user
-        res.setHeader('WWW-Authenticate', 'Basic realm="MyRealmName"');
-        // this will displayed in the browser when authorization is cancelled
-        res.end('Unauthorized');
-    } else {
-        // continue with processing, user was authenticated
-        next();
-    }
-});
 
 app.use(middle1)
 app.use(proxy)
