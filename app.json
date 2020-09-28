@@ -1,0 +1,12 @@
+{
+  "name": "通用Web代理 ",
+  "description": "",
+  "image": "heroku/nodejs",
+  "repository": "https://github.com/netptop/siteproxy",
+  "keywords": ["key"],
+  "website": "https://github.com/netptop/siteproxy",
+  "env": {
+    "OAUTH_CLIENT_ID": "",
+    "OAUTH_CLIENT_SECRET": ""
+  }
+}
