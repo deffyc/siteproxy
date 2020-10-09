@@ -24,7 +24,7 @@ const middle1 = (req, res, next) => {
         return res.status(404).send('{"error": "too many redirects"}')
     }
     if (req.url === '/' || req.url === '/index.html') {
-        var auth;
+       /* var auth;
 
         // check whether an autorization header was send    
         if (req.headers.authorization) {
@@ -43,8 +43,10 @@ const middle1 = (req, res, next) => {
             body = fs.readFileSync(path.join(__dirname, './index.html'), encoding = 'utf-8')
             res.status(200).send(body)
             return
-        }
-        
+        }*/
+         body = fs.readFileSync(path.join(__dirname, './index.html'), encoding = 'utf-8')
+            res.status(200).send(body)
+            return
     } else
     if (fs.existsSync(dirPath) && !fs.lstatSync(dirPath).isDirectory()) {
         body = fs.readFileSync(dirPath)
